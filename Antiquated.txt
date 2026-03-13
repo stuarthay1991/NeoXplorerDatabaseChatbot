@@ -1,0 +1,3 @@
+Antiquated instructions
+
+Subtypes refers to signatures in the database. If a table's name is [cancer]_signature, it will tell you which of those cancer's events (first column) correspond to those cancer's subtypes (other rows, a value of 1 indicates its a part of the subtype)

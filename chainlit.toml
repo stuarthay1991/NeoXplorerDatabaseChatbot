@@ -1,0 +1,9 @@
+[server]
+host = "0.0.0.0"
+port = 8084
+
+[data]
+# Enable database persistence for conversations
+# Chainlit will automatically create tables (Thread, Step, etc.) on startup
+# Uses DATABASE_URL from your .env file
+enabled = true
