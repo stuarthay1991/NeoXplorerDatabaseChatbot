@@ -112,26 +112,9 @@ CRITICAL INSTRUCTIONS:
 TOOL USAGE WORKFLOW:
 1. First, call query_neoxCancerSpecific and query_neoxUniversal to get tables and columns information.
    
-   **MULTIPLE CANCERS = MULTIPLE TOOL CALLS (REQUIRED)**
-   If the user mentions MULTIPLE cancers in their question, you MUST call query_neoxCancerSpecific MULTIPLE times - once for EACH cancer. This is NOT optional.
-   
-   Examples:
-   - User: "How many splicing events are present for LUAD and BRCA?"
-     → You MUST call: query_neoxCancerSpecific(cancer_prefix="luad", table_suffix="_splice") AND query_neoxCancerSpecific(cancer_prefix="brca", table_suffix="_splice")
-   - User: "Compare BRCA, COAD, and LUAD"
-     → You MUST call the tool THREE times: once for "brca", once for "coad", once for "luad"
-   
-   DO NOT try to combine multiple cancers into one tool call. Each cancer requires its own separate tool call.
-   
 2. Decide the USE value for each column (RETURN or FILTER) and QUERYTYPE(s) for each table (COUNT, DISTINCT, FILTERED). Then call query_neoxQueryConstruction with table_info as a JSON string. Combine outputs from multiple tool calls into one tables array.
 
 CANCER PREFIX DESCRIPTIONS:
-
-IMPORTANT: When users mention cancer names (e.g., "LUAD", "BRCA", "Breast", "Lung Adenocarcinoma"), map them to these lowercase prefixes:
-- LUAD, Lung Adenocarcinoma, Lung ADC → luad
-- BRCA, Breast, Breast Cancer → brca
-- COAD, Colon, Colon Cancer → coad
-- etc.
 
 blca: Bladder Urothelial Carcinoma
 brca: Breast Invasive Carcinoma
@@ -312,23 +295,24 @@ SELECT braincolumn FROM table WHERE kidneycolumn = '5'; In this SQL statement, b
                     try:
                         results = await conn.fetch(sql_query)
                         if results:
-                            # Build a short summary for the AI to describe (query + row count + sample)
+                            # Build summary and ask AI to answer the user's question using the results
                             n_rows = len(results)
                             col_names = list(results[0].keys())
                             sample = [dict(r) for r in results[:5]]
                             summary_for_ai = (
+                                f"User's question: {message.content}\n\n"
                                 f"SQL executed: {sql_query}\n"
                                 f"Rows returned: {n_rows}\n"
                                 f"Columns: {col_names}\n"
                                 f"Sample (first {len(sample)} rows): {sample}"
                             )
                             describe_messages = [
-                                SystemMessage(content="You briefly describe query results for the user. Do not list every row; summarize what the data shows in 2–4 sentences. Mention row count and what the columns/values represent."),
+                                SystemMessage(content="Using the query results below, answer the user's question directly and concisely. Use the actual numbers and data (e.g. row count, values from the sample) to answer. Do not list every row; use the summary to give a clear, direct answer to what they asked."),
                                 HumanMessage(content=summary_for_ai),
                             ]
                             desc_response = await client.ainvoke(describe_messages)
-                            description = (desc_response.content or "").strip() or f"The query returned {n_rows} rows."
-                            reply = f"**Query:**\n```sql\n{sql_query}\n```\n\n**Results:** {description}"
+                            answer = (desc_response.content or "").strip() or f"The query returned {n_rows} rows."
+                            reply = f"**Query:**\n```sql\n{sql_query}\n```\n\n**Answer:** {answer}"
                         else:
                             reply = f"**Query:**\n```sql\n{sql_query}\n```\n\n✅ The query ran successfully but returned no rows."
                     except Exception as e:

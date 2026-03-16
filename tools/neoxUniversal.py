@@ -15,7 +15,8 @@ pancancer_table_dict = {
                 ["COLUMN NAME: synonym", "COLUMN DESCRIPTION: The list of the synonyms for the subtype, separated by a | character for each"]
     ],
     "survival": [["COLUMN NAME: cancer", "COLUMN DESCRIPTION: The cancer name this event belongs to."],
-            ["COLUMN NAME: uid", "COLUMN DESCRIPTION: The unique identifier for this event."],
+            ["COLUMN NAME: uid", "COLUMN DESCRIPTION: The unique identifier for this splicing event."],
+            ["COLUMN NAME: gene", "COLUMN DESCRIPTION: The gene symbol associated with this splicing event."],
             ["COLUMN NAME: eventannotation", "COLUMN DESCRIPTION: The type of event this is."],
             ["COLUMN NAME: zscore", "COLUMN DESCRIPTION: The zscore."],
             ["COLUMN NAME: lrtpvalue", "COLUMN DESCRIPTION: Likelihood Ratio Test p-value. Low values indicate suvival."],
@@ -58,17 +59,18 @@ async def query_neoxUniversal(
     table_name: Literal["supersig", "neo_cluster_synonym", "survival", "hs_exon", "hs_junc", "hs_transcript_annot"]
 ) -> str:
     """ 
-    USE WHEN: The user is asking for database wide metrics. 
+    USE WHEN: The user is asking for database wide metrics, or querying all cancers at once.
     For example, 'How many cancers are there?', 'How many subtypes are in the database total?', 'How many splicing events are in the database?'
 
     Complex example question: what clusters have the synonym c15? You will search for that term using a LIKE operative for the synonym in column 'synonym' in table neo_cluster_synonym and return the respective clusterid values.
+    Complex example question: What splicing events for exist for TP53 in which cancers and which are poor prognosis?
 
     HOW TO USE: Decide the relevant table and columns based on the user's prompt. Pick from 'supersig', 'neo_cluster_antonym', or 'survival' based on what the user is asking. HOW TO USE: Decide the relevant table and columns based on the user's prompt. Then decide the USE value of the columns that are selected, can be one of two values (either RETURN or FILTER. RETURN is the column selected, while FILTER is a column filtered on using where or like statements.) Then decide the QUERYTYPE (can be one or more of these values, COUNT, DISTINCT, or FILTERED)
     
     table_name: Table type (
-    supersig=(contains all subtypes for all cancers and their respective events (it lists their uids)), 
+    supersig=(contains all subtypes for all cancers and their respective splicing events (it lists their uids, and the gene symbol is within the uid)), 
     neo_cluster_synonym=(contains all subtypes for all cancers and synonyms for the subtype), 
-    survival=(Contains information for survival statistics)),
+    survival=(Contains all splicing events and contains information for survival statistics)),
     hs_exon=(Contains all exons in the database)),
     hs_junc=(Contains all junctions in the database)),
     hs_transcript_annot=(Contains all transcripts in the database)

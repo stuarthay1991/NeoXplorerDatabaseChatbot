@@ -27,6 +27,10 @@ cancer_table_type_dict = {
             ["COLUMN NAME: gender", "COLUMN DESCRIPTION: Gender of patient (can be these values: MALE, FEMALE, UNK)"],
             ["COLUMN NAME: tumor_stage", "COLUMN DESCRIPTION: Stage of patient's tumor (can be these values: Stage I, Stage II, Stage III, Stage IV, UNK)"],
             ["COLUMN NAME: bmi_status", "COLUMN DESCRIPTION: bmi index of the patient (can be these values: NA, Normal, Overweight, Underweight, Obese)"],
+            ["COLUMN NAME: an_number", "COLUMN DESCRIPTION: This is the number of adjacent normal samples available for a given tumor sample. (can be these values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, UNK)"],
+            ["COLUMN NAME: bcr_shannon", "COLUMN DESCRIPTION: Reflects how diverse the B-cell population is within the tumor. High values suggest broad immune responses. (can be these values: HIGH, MEDIUM, LOW)"],
+            ["COLUMN NAME: immune_subtype", "COLUMN DESCRIPTION: The 6 subtypes reflect distinct tumor immune microenvironments across all cancer types. (can be these values: C1, C2, C3, C4, C5, C6)"],
+            ["COLUMN NAME: hcv_positive", "COLUMN DESCRIPTION: Whether the patient tested positive for Hepatitis C virus. (can be these values: TRUE, FALSE)"],
             ["ALL OTHER COLUMNS", "COLUMN DESCRIPTION: Every other column in this table signifies a category a patient is in, whether it is ethnicity, tumor location, or age."]
     ],
     "_fullsig": [["COLUMN NAME: signature_name", "COLUMN DESCRIPTION: Subtype this uid is associated with. To get all subtypes for a cancer, use a DISTINCT query for this column."],
@@ -62,7 +66,7 @@ async def query_neoxCancerSpecific(
     """ 
     USE WHEN: The user is asking about one or more specific cancers.
 
-    CRITICAL: If the user mentions MULTIPLE cancers (e.g., "LUAD and BRCA", "BRCA, COAD, and LUAD"), you MUST call this tool MULTIPLE times - once for EACH cancer mentioned. For example, if asked about "LUAD and BRCA", call this tool twice: once with cancer_prefix="luad" and once with cancer_prefix="brca".
+    CRITICAL: If the user mentions MULTIPLE cancers, you MUST call this tool MULTIPLE times - once for EACH cancer mentioned.
 
     HOW TO USE: Decide the relevant table and columns based on the user's prompt. Then decide the USE value of the columns that are selected, can be one of two values (either RETURN or FILTER. RETURN is the column selected, while FILTER is a column filtered on using where or like statements.) Then decide the QUERYTYPE (can be one or more of these values, COUNT, DISTINCT, or FILTERED)
 
@@ -74,7 +78,6 @@ async def query_neoxCancerSpecific(
     _fullsig=(shows every single event for every single subtype. contains similar information to _splice, but there is no splicing data for patients; there are also more entries because some uids are found in multiple subtypes. Contains columns for rawp, signature, and adjp which do not exist for _splice), 
     _fulldegene=(contains information for differentially expressed genes)
     """
-
 
     # Get column information for the selected table
     table_name = f"{cancer_prefix}{table_suffix}"
